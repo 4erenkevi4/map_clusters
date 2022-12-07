@@ -10,7 +10,7 @@ interface MapDao {
     suspend fun addPos(pos: Pos)
 
     @Query("SELECT * FROM poses WHERE _lat BETWEEN :lat1 AND :lat2 AND _lon BETWEEN :lon1 AND :lon2")
-    suspend fun filteredByLat(lat1: Int, lat2: Int, lon1: Int, lon2: Int): List<Pos>
+    suspend fun filteredByCoordinate(lat1: Int, lat2: Int, lon1: Int, lon2: Int): List<Pos>
 
     @Query("SELECT COUNT(*) FROM poses")
     suspend fun getCountPoses(): Int

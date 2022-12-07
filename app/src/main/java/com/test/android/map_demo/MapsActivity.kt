@@ -3,7 +3,6 @@ package com.test.android.map_demo
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
-import android.graphics.Color
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,25 +26,23 @@ import kotlinx.coroutines.launch
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private var map: GoogleMap? = null
-    private lateinit var binding: ActivityMapsBinding
     private lateinit var clusterManager: ClusterManager<MyItem>
-    private var dialog: Dialog? = null
+    private lateinit var mapRepository: MapRepository
+    private lateinit var binding: ActivityMapsBinding
     private val posFlow = MutableSharedFlow<Pos>()
-    private var isMapReady: Boolean = false
+    private var map: GoogleMap? = null
+    private var dialog: Dialog? = null
 
-    private lateinit var testRepository: MapRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        testRepository = MapRepositoryImpl(this)
+        mapRepository = MapRepositoryImpl(this)
         binding = ActivityMapsBinding.inflate(layoutInflater)
-        binding.root.setBackgroundColor(Color.TRANSPARENT)
+        setContentView(binding.root)
         val builder = AlertDialog.Builder(this, R.style.CustomDialog)
         builder.setView(R.layout.progressbar)
         builder.setCancelable(true)
         dialog = builder.create()
-        setContentView(binding.root)
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -57,17 +54,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    @SuppressLint("PotentialBehaviorOverride")
-    private fun setUpClusterer() {
+    private fun setUpClusterManager() {
         clusterManager = ClusterManager(this, map)
         clusterManager.algorithm = GridBasedAlgorithm()
         map?.setOnCameraIdleListener(clusterManager)
-        map?.setOnMarkerClickListener(clusterManager)
-
     }
 
-
-    private fun getCurentposes(zoom: Int) {
+    private fun getCurrentPoses(zoom: Int) {
         val map = map ?: return
         val currentLatitude = map.cameraPosition.target.latitude.toInt()
         val currentLongitude = map.cameraPosition.target.longitude.toInt()
@@ -79,7 +72,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         lifecycleScope.launch(Dispatchers.IO) {
             setProgressDialog(true)
             try {
-                val listlat = testRepository.filteredByLat(
+                val listlat = mapRepository.filteredByCoordinate(
                     currentLongitude - level,
                     currentLongitude + level,
                     currentLatitude - level,
@@ -116,12 +109,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("SuspiciousIndentation")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-        isMapReady = true
         map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(50.4501, 30.5234), 7f))
-        setUpClusterer()
+        setUpClusterManager()
         map?.setOnCameraIdleListener {
             clusterManager.clearItems()
-            getCurentposes(map!!.cameraPosition.zoom.toDouble().toInt())
+            getCurrentPoses(map!!.cameraPosition.zoom.toDouble().toInt())
         }
     }
 

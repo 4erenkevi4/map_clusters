@@ -10,7 +10,7 @@ import com.test.android.map_demo.data.Pos
 @Database(entities = [Pos::class], version = 1, exportSchema = false)
 
 abstract class MapRoomDatabase : RoomDatabase() {
-    abstract fun testDao(): MapDao
+    abstract fun mapDao(): MapDao
 
     companion object {
 
