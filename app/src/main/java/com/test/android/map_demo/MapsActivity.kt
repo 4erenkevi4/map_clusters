@@ -57,7 +57,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setUpClusterManager() {
         clusterManager = ClusterManager(this, map)
         clusterManager.algorithm = GridBasedAlgorithm()
-        map?.setOnCameraIdleListener(clusterManager)
+        map!!.setOnCameraIdleListener(clusterManager)
     }
 
     private fun getCurrentPoses(zoom: Int) {
@@ -109,11 +109,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("SuspiciousIndentation")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-        map!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(50.4501, 30.5234), 7f))
-        setUpClusterManager()
-        map?.setOnCameraIdleListener {
-            clusterManager.clearItems()
-            getCurrentPoses(map!!.cameraPosition.zoom.toDouble().toInt())
+        map?.let {
+            it.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(50.4501, 30.5234), 7f))
+            setUpClusterManager()
+            it.setOnCameraIdleListener {
+                clusterManager.clearItems()
+                getCurrentPoses(it.cameraPosition.zoom.toDouble().toInt())
+            }
         }
     }
 
